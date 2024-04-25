@@ -17,7 +17,9 @@ app.use('/patients',patientRoutes);
 app.use('/legal',legalRoutes);
 app.use('/matrymony',matrymonyRoutes);
 app.use('/auth', authRoutes);
-
+app.get('/',(req,res)=>{
+  res.send("welcome to my world")
+})
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
