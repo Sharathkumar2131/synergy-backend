@@ -3,12 +3,12 @@ const sql = require('mssql');
 const config = {
   user: 'sharath',
   password: 'Tsc@2131',
-  server: 'DESKTOP-L26TOEP',
+  server: '103.168.173.174',
   port: 1433,
   database: 'synergy',
   options: {
-    trustedConnection: true,
-    encrypt: false,
+      trustedConnection: true,
+      encrypt: false,
   },
 };
 
