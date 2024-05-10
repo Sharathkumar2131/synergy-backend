@@ -7,8 +7,8 @@ const config = {
   port: 1433,
   database: 'synergy',
   options: {
-      trustedConnection: true,
-      encrypt: false,
+    trustedConnection: true,
+    encrypt: false,
   },
 };
 
@@ -42,7 +42,7 @@ async function getChaById(req, res) {
       .query(`
         SELECT *
         FROM cha
-        WHERE id = @prefix + @year + @sequenceNumber
+        WHERE chaid = @prefix + @year + @sequenceNumber
       `);
 
     if (result.recordset.length > 0) {
@@ -57,44 +57,6 @@ async function getChaById(req, res) {
     res.status(500).send('Internal server error');
   }
 }
-
-// async function updateCha(req, res) {
-//   const chaId = req.params.chaId;
-//   const updatedFields = req.body;
-
-//   try {
-//     const pool = await sql.connect(config);
-//     const request = pool.request();
-
-//     // Prepare to dynamically construct the SET clause
-//     const setClauses = [];
-//     Object.keys(updatedFields).forEach((key) => {
-//       const columnValue = updatedFields[key];
-//       const paramName = key; // Use the field name as the parameter name
-//       request.input(paramName, sql.NVarChar(sql.MAX), columnValue);
-//       setClauses.push(`${key} = @${paramName}`);
-//     });
-
-//     // Generate the UPDATE query
-//     const updateQuery = `
-//       UPDATE cha 
-//       SET ${setClauses.join(', ')}
-//       WHERE id = @id
-//     `;
-
-//     // Adding input parameter for the chaId
-//     request.input('id', sql.NVarChar(50), chaId);
-
-//     // Execute the UPDATE query
-//     const result = await request.query(updateQuery);
-
-//     res.status(200).send('CHA updated successfully');
-//     await pool.close();
-//   } catch (err) {
-//     console.error('SQL error:', err.message);
-//     res.status(500).send('Internal server error');
-//   }
-// }
 
 
 async function updateCha(req, res) {
