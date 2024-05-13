@@ -13,15 +13,15 @@ const config = {
 };
 
 async function loginUser(req, res) {
-  const { id, role } = req.body;
+  const { user_name, password } = req.body;
 
   try {
     const pool = await sql.connect(config);
     const result = await pool
       .request()
-      .input('id', sql.NVarChar(50), id)
-      .input('role', sql.NVarChar(50), role)
-      .query('SELECT * FROM cha WHERE chaid = @id AND role = @role');
+      .input('user_name', sql.NVarChar(50), user_name)
+      .input('password', sql.NVarChar(50), password)
+      .query('SELECT * FROM users WHERE user_name = @user_name AND password = @password');
 
     if (result.recordset.length > 0) {
       res.status(200).json({ message: 'Login successful' });

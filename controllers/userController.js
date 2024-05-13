@@ -12,6 +12,73 @@ const config = {
   },
 };
 
+
+async function addCha(req, res) {
+  const {
+    fullname,
+    father_name,
+    gender,
+    dob,
+    whatsapp_no,
+    alternative_number,
+    email,
+    address,
+    qualification,
+    occupation
+  } = req.body;
+
+  try {
+    const pool = await sql.connect(config);
+
+    // Fetch the last chaid
+    const lastCha = await pool.request().query('SELECT TOP 1 chaid FROM cha ORDER BY chaid DESC');
+    let lastId = 'svacha2024000'; // Default starting ID
+    if (lastCha.recordset.length > 0) {
+      lastId = lastCha.recordset[0].chaid;
+    }
+    const newId = incrementChaId(lastId); // Function to increment the chaid
+
+    const request = pool.request();
+
+    const query = `
+      INSERT INTO cha 
+      (chaid, fullname, father_name, gender, dob, whatsapp_no, alternative_number, email, address, qualification, occupation) 
+      VALUES 
+      (@chaid, @fullname, @father_name, @gender, @dob, @whatsapp_no, @alternative_number, @email, @address, @qualification, @occupation)
+    `;
+
+    request.input('chaid', sql.NVarChar(50), newId);
+    request.input('fullname', sql.NVarChar(100), fullname);
+    request.input('father_name', sql.NVarChar(100), father_name);
+    request.input('gender', sql.NVarChar(10), gender);
+    request.input('dob', sql.Date, dob);
+    request.input('whatsapp_no', sql.NVarChar(20), whatsapp_no);
+    request.input('alternative_number', sql.NVarChar(20), alternative_number);
+    request.input('email', sql.NVarChar(100), email);
+    request.input('address', sql.NVarChar(255), address);
+    request.input('qualification', sql.NVarChar(100), qualification);
+    request.input('occupation', sql.NVarChar(100), occupation);
+
+    await request.query(query);
+
+    res.status(201).send('CHA added successfully');
+    await pool.close();
+  } catch (err) {
+    console.error('SQL error:', err.message);
+    res.status(500).send('Internal server error');
+  }
+}
+
+// Function to increment the chaid
+function incrementChaId(lastId) {
+  const lastNum = parseInt(lastId.slice(-3));
+  const newNum = lastNum + 1;
+  const paddedNum = String(newNum).padStart(3, '0');
+  const prefix = lastId.slice(0, -3);
+  return `${prefix}${paddedNum}`;
+}
+
+
 async function getChaList(req, res) {
   try {
     const pool = await sql.connect(config);
@@ -73,7 +140,7 @@ async function updateCha(req, res) {
       const columnValue = updatedFields[key];
       const paramName = key; // Use the field name as the parameter name
       request.input(paramName, sql.NVarChar(sql.MAX), columnValue);
-      if (key !== 'id') { // Exclude 'id' from SET clause
+      if (key !== 'chaid') { // Exclude 'id' from SET clause
         setClauses.push(`${key} = @${paramName}`);
       }
     });
@@ -81,11 +148,11 @@ async function updateCha(req, res) {
     const updateQuery = `
       UPDATE cha 
       SET ${setClauses.join(', ')}
-      WHERE id = @id
+      WHERE chaid = @chaid
     `;
 
     // Add the 'id' parameter for WHERE clause
-    request.input('id', sql.NVarChar(50), chaId);
+    request.input('chaid', sql.NVarChar(50), chaId);
 
     // Execute the UPDATE query
     const result = await request.query(updateQuery);
@@ -103,4 +170,5 @@ module.exports = {
   getChaList,
   getChaById,
   updateCha,
+  addCha,
 };
