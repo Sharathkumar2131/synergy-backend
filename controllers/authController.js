@@ -24,11 +24,15 @@ async function loginUser(req, res) {
       .query('SELECT * FROM users WHERE user_name = @user_name AND password = @password');
 
     if (result.recordset.length > 0) {
-      res.status(200).json({ message: 'Login successful' });
+      const user = result.recordset[0];
+      res.status(200).json({
+        message: 'Login successful',
+        user: user // Return all user details
+      });
     } else {
       res.status(401).json({ message: 'Invalid credentials' });
     }
-    
+
     await pool.close();
   } catch (err) {
     console.error('SQL error:', err.message);
