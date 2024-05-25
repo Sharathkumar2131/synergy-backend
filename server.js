@@ -10,6 +10,7 @@ const matrymonyRoutes = require('./Routers/matrymonyRoutes');
 const serviceCodeRoutes = require('./Routers/serviceCodeRoutes');
 const serviceTypeRoutes = require('./Routers/serviceTypesRoutes');
 const empRoutes = require('./Routers/empRouter');
+const serviceUsers = require('./Routers/ServiceUserRoutes');
 
 app.use(bodyParser.json());
 
@@ -22,6 +23,7 @@ app.use('/users', usersRoutes);
 app.use('/auth', authRoutes);
 app.use('/servicecodes', serviceCodeRoutes);
 app.use('/servicetypes', serviceTypeRoutes);
+app.use('/', serviceUsers);
 app.use('/emp', empRoutes);
 app.get('/', (req, res) => {
   res.send("welcome to my world")
