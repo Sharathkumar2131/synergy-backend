@@ -24,7 +24,7 @@ exports.createUser = async (req, res) => {
         const result = await pool.request().query('SELECT COUNT(*) AS userCount FROM service_users');
         const userCount = result.recordset[0].userCount;
 
-        const svaid = `${prefix}${currentYear}${String(userCount + 1).padStart(5, '0')}`;
+        const svaid = `${prefix}${currentYear}${String(userCount + 1).padStart(0, '0')}`;
 
         const insertResult = await pool.request()
             .input('svaid', sql.VarChar(255), svaid)
