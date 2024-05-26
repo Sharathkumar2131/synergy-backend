@@ -8,43 +8,46 @@ const config = {
     port: 1433,
     database: 'synergy',
     options: {
-      trustedConnection: true,
-      encrypt: false,
+        trustedConnection: true,
+        encrypt: false,
     },
 };
 
 exports.createUser = async (req, res) => {
     const { prefix, name, f_name, mobile, service_required, qualification, address } = req.body;
-  
+
     try {
-      const pool = await sql.connect(config);
-      
-      const currentYear = moment().format('YYYY');
-      
-      const result = await pool.request().query('SELECT COUNT(*) AS userCount FROM service_users');
-      const userCount = result.recordset[0].userCount;
-  
-      const svaid = `${prefix}${currentYear}${String(userCount + 1).padStart(0, '0')}`;
-  
-      const insertResult = await pool.request()
-        .input('svaid', sql.VarChar(255), svaid)
-        .input('name', sql.VarChar(255), name)
-        .input('f_name', sql.VarChar(255), f_name)
-        .input('mobile', sql.VarChar(20), mobile)
-        .input('service_required', sql.VarChar(255), service_required)
-        .input('qualification', sql.VarChar(255), qualification)
-        .input('address', sql.Text, address)
-        .query(`
-          INSERT INTO service_users (svaid, name, f_name, mobile, service_required, qualification, address)
-          VALUES (@svaid, @name, @f_name, @mobile, @service_required, @qualification, @address);
-        `);
-  
-      res.status(201).json({ message: 'User created successfully', svaid });
+        const pool = await sql.connect(config);
+
+        const currentYear = moment().format('YYYY');
+
+        const result = await pool.request().query('SELECT COUNT(*) AS userCount FROM service_users');
+        const userCount = result.recordset[0].userCount;
+
+        const svaid = `${prefix}${currentYear}${String(userCount + 1).padStart(5, '0')}`;
+
+        const insertResult = await pool.request()
+            .input('svaid', sql.VarChar(255), svaid)
+            .input('name', sql.VarChar(255), name)
+            .input('f_name', sql.VarChar(255), f_name)
+            .input('mobile', sql.VarChar(20), mobile)
+            .input('service_required', sql.VarChar(255), service_required)
+            .input('qualification', sql.VarChar(255), qualification)
+            .input('address', sql.Text, address)
+            .query(`
+                INSERT INTO service_users (svaid, name, f_name, mobile, service_required, qualification, address)
+                VALUES (@svaid, @name, @f_name, @mobile, @service_required, @qualification, @address);
+            `);
+
+        res.status(201).json({ message: 'User created successfully', svaid });
     } catch (error) {
-      console.error('Error creating user:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error('Error creating user:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+// Other controller methods unchanged
+
 // Create a new user
 // exports.createUser = async (req, res) => {
 //   const { svaid, name, f_name, mobile, service_required, qualification, address } = req.body;

@@ -15,6 +15,6 @@ router.get('/serviceusers/:id', userService.getUserById);
 router.put('/serviceusers/:id', userService.updateUserById);
 
 // Delete user by ID
-router.delete('/users/:id', userService.deleteUserById);
+router.delete('/serviceusers/:id', userService.deleteUserById);
 
 module.exports = router;
