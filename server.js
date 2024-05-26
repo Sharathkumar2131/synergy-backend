@@ -18,12 +18,14 @@ const serviceCodeRoutes = require('./Routers/serviceCodeRoutes');
 const serviceTypeRoutes = require('./Routers/serviceTypesRoutes');
 const empRoutes = require('./Routers/empRouter');
 const serviceUsers = require('./Routers/ServiceUserRoutes');
+const serviceProviders = require('./Routers/ServiceProviderRoutes');
 
 app.use('/users', usersRoutes);
 app.use('/auth', authRoutes);
 app.use('/servicecodes', serviceCodeRoutes);
 app.use('/servicetypes', serviceTypeRoutes);
 app.use('/', serviceUsers);
+app.use('/', serviceProviders);
 app.use('/emp', empRoutes);
 
 // Default route
