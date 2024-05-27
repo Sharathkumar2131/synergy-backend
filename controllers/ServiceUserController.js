@@ -14,7 +14,7 @@ const config = {
 };
 
 exports.createUser = async (req, res) => {
-  const { prefix, name, f_name, mobile, service_required, qualification, address, category_id } = req.body;
+  const { prefix, name, f_name, mobile, service_required, qualification, address, category_id,reference_id } = req.body;
 
   try {
       const pool = await sql.connect(config);
@@ -34,10 +34,11 @@ exports.createUser = async (req, res) => {
           .input('service_required', sql.VarChar(255), service_required)
           .input('qualification', sql.VarChar(255), qualification)
           .input('category_id', sql.Int, category_id)
+          .input('reference_id', sql.Int, reference_id)
           .input('address', sql.Text, address)
           .query(`
-              INSERT INTO service_users (svaid, name, f_name, mobile, service_required, qualification, address, category_id)
-              VALUES (@svaid, @name, @f_name, @mobile, @service_required, @qualification, @address, @category_id);
+              INSERT INTO service_users (svaid, name, f_name, mobile, service_required, qualification, address, category_id,reference_id)
+              VALUES (@svaid, @name, @f_name, @mobile, @service_required, @qualification, @address, @category_id,@reference_id);
           `);
 
       res.status(201).json({ message: 'User created successfully', svaid });
