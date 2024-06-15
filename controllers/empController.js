@@ -15,6 +15,7 @@ const config = {
 
 async function AddEmp(req, res) {
   const {
+    prefix, // Accept the prefix from the frontend
     fullname,
     father_name,
     gender,
@@ -31,43 +32,54 @@ async function AddEmp(req, res) {
     const pool = await sql.connect(config);
 
     // Fetch the last chaid
-    const lastCha = await pool.request().query('SELECT TOP 1 id FROM emp_details ORDER BY id DESC');
-    let lastId = 'svacha2024000'; // Default starting ID
+    const lastCha = await pool.request().query(`SELECT TOP 1 empid FROM emp_details WHERE empid LIKE '${prefix}%' ORDER BY empid DESC`);
+    let lastId = `${prefix}2024000`;
     if (lastCha.recordset.length > 0) {
-      lastId = lastCha.recordset[0].chaid;
+      lastId = lastCha.recordset[0].empid;
     }
-    const newId = incrementChaId(lastId); // Function to increment the chaid
+    const newId = incrementChaId(lastId, prefix); // Pass the prefix to the increment function
 
     const request = pool.request();
 
     const query = `
-      INSERT INTO cha 
-      (chaid, fullname, father_name, gender, dob, whatsapp_no, alternative_number, email, address, qualification, occupation) 
+      INSERT INTO emp_details 
+      (empid, emp_name, father_name, gender, dob, whatsapp_no, alternative_number, email, address, qualification, occupation, user_role, emp_status) 
       VALUES 
-      (@chaid, @fullname, @father_name, @gender, @dob, @whatsapp_no, @alternative_number, @email, @address, @qualification, @occupation)
+      (@empid, @emp_name, @father_name, @gender, @dob, @whatsapp_no, @alternative_number, @email, @address, @qualification, @occupation, @user_role, @emp_status)
     `;
 
-    request.input('chaid', sql.NVarChar(50), newId);
-    request.input('fullname', sql.NVarChar(100), fullname);
-    request.input('father_name', sql.NVarChar(100), father_name);
+    request.input('empid', sql.NVarChar(50), newId);
+    request.input('emp_name', sql.NVarChar(50), fullname);
+    request.input('father_name', sql.NVarChar(50), father_name);
     request.input('gender', sql.NVarChar(10), gender);
     request.input('dob', sql.Date, dob);
-    request.input('whatsapp_no', sql.NVarChar(20), whatsapp_no);
-    request.input('alternative_number', sql.NVarChar(20), alternative_number);
-    request.input('email', sql.NVarChar(100), email);
+    request.input('whatsapp_no', sql.NVarChar(15), whatsapp_no);
+    request.input('alternative_number', sql.NVarChar(15), alternative_number);
+    request.input('email', sql.NVarChar(50), email);
     request.input('address', sql.NVarChar(255), address);
-    request.input('qualification', sql.NVarChar(100), qualification);
-    request.input('occupation', sql.NVarChar(100), occupation);
+    request.input('qualification', sql.NVarChar(50), qualification);
+    request.input('occupation', sql.NVarChar(50), occupation);
+    request.input('user_role', sql.NVarChar(20), 'employee'); // Assuming a default role of 'employee'
+    request.input('emp_status', sql.NVarChar(10), 'active'); // Assuming a default status of 'active'
 
     await request.query(query);
 
-    res.status(201).send('CHA added successfully');
+    res.status(201).send('Employee added successfully');
     await pool.close();
   } catch (err) {
     console.error('SQL error:', err.message);
     res.status(500).send('Internal server error');
   }
 }
+
+// Function to increment the ID
+function incrementChaId(lastId, prefix) {
+  const numericPart = parseInt(lastId.replace(prefix, ''), 10); // Extract numeric part
+  const newNumericPart = numericPart + 1; // Increment the numeric part
+  const newId = `${prefix}${newNumericPart.toString().padStart(4, '0')}`; // Form new ID
+  return newId;
+}
+
 
 // Function to increment the chaid
 function incrementChaId(lastId) {
@@ -113,50 +125,93 @@ async function getEmpDetailsById(req, res) {
 }
 
 
-// async function updateCha(req, res) {
-//   const chaId = req.params.chaId;
-//   const updatedFields = req.body;
+async function UpdateEmp(req, res) {
+  const {
+    fullname,
+    father_name,
+    gender,
+    dob,
+    whatsapp_no,
+    alternative_number,
+    email,
+    address,
+    qualification,
+    occupation,
+    user_role,
+    emp_status
+  } = req.body;
+  const { id } = req.params;
 
-//   try {
-//     const pool = await sql.connect(config);
-//     const request = pool.request();
+  try {
+    const pool = await sql.connect(config);
 
-//     // Prepare to dynamically construct the SET clause
-//     const setClauses = [];
-//     Object.keys(updatedFields).forEach((key) => {
-//       const columnValue = updatedFields[key];
-//       const paramName = key; // Use the field name as the parameter name
-//       request.input(paramName, sql.NVarChar(sql.MAX), columnValue);
-//       if (key !== 'chaid') { // Exclude 'id' from SET clause
-//         setClauses.push(`${key} = @${paramName}`);
-//       }
-//     });
+    const request = pool.request();
 
-//     const updateQuery = `
-//       UPDATE cha 
-//       SET ${setClauses.join(', ')}
-//       WHERE chaid = @chaid
-//     `;
+    const query = `
+      UPDATE emp_details 
+      SET 
+        emp_name = @emp_name,
+        father_name = @father_name,
+        gender = @gender,
+        dob = @dob,
+        whatsapp_no = @whatsapp_no,
+        alternative_number = @alternative_number,
+        email = @email,
+        address = @address,
+        qualification = @qualification,
+        occupation = @occupation,
+        user_role = @user_role,
+        emp_status = @emp_status
+      WHERE 
+        id = @id
+    `;
 
-//     // Add the 'id' parameter for WHERE clause
-//     request.input('chaid', sql.NVarChar(50), chaId);
+    request.input('id', sql.Int, id);
+    request.input('emp_name', sql.NVarChar(50), fullname);
+    request.input('father_name', sql.NVarChar(50), father_name);
+    request.input('gender', sql.NVarChar(10), gender);
+    request.input('dob', sql.Date, dob);
+    request.input('whatsapp_no', sql.NVarChar(15), whatsapp_no);
+    request.input('alternative_number', sql.NVarChar(15), alternative_number);
+    request.input('email', sql.NVarChar(50), email);
+    request.input('address', sql.NVarChar(255), address);
+    request.input('qualification', sql.NVarChar(50), qualification);
+    request.input('occupation', sql.NVarChar(50), occupation);
+    request.input('user_role', sql.NVarChar(20), user_role); // Role of the employee
+    request.input('emp_status', sql.NVarChar(10), emp_status); // Status of the employee
 
-//     // Execute the UPDATE query
-//     const result = await request.query(updateQuery);
+    await request.query(query);
 
-//     res.status(200).send('CHA updated successfully');
-//     await pool.close();
-//   } catch (err) {
-//     console.error('SQL error:', err.message);
-//     res.status(500).send('Internal server error');
-//   }
-// }
+    res.status(200).send('Employee updated successfully');
+    await pool.close();
+  } catch (err) {
+    console.error('SQL error:', err.message);
+    res.status(500).send('Internal server error');
+  }
+}
 
+
+async function getEmployeesByRole(req, res) {
+  try {
+    await sql.connect(config);
+    const request = new sql.Request();
+    const userRole = req.params.userRole;
+
+    const result = await request.query(`SELECT * FROM emp_details WHERE user_role = '${userRole}'`);
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.error('SQL error:', err);
+    res.status(500).send('Error retrieving data from MSSQL.');
+  } finally {
+    sql.close();
+  }
+}
 
 module.exports = {
   getEmpDetails,
   getEmpDetailsById,
-  AddEmp
-  // updateCha,
-  // addCha,
+  AddEmp,
+  UpdateEmp,
+  getEmployeesByRole
 };
