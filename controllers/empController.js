@@ -125,6 +125,7 @@ async function getEmpDetailsById(req, res) {
 }
 
 
+
 async function UpdateEmp(req, res) {
   const {
     fullname,
@@ -202,9 +203,84 @@ async function getEmployeesByRole(req, res) {
     res.json(result.recordset);
   } catch (err) {
     console.error('SQL error:', err);
-    res.status(500).send('Error retrieving data from MSSQL.');
+    res.status(500).send('Error retrieving data from sql.');
   } finally {
     sql.close();
+  }
+}
+
+async function getEmployeesByEmpId(req, res) {
+  try {
+      const empid = req.params.empid;
+      let pool = await sql.connect(config);
+      let result = await pool.request()
+          .input('empid', sql.NVarChar, empid)
+          .query(`SELECT * FROM emp_details WHERE empid = @empid`);
+
+      if (result.recordset.length > 0) {
+          res.json(result.recordset[0]);
+      } else {
+          res.status(404).json({ error: 'Employee not found' });
+      }
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+}
+
+
+async function updateEmployee(req, res) {
+  try {
+      const empid = req.params.empid;
+      const { emp_name, father_name, gender, dob, whatsapp_no, alternative_number, email, address, qualification, occupation, user_role, emp_status } = req.body;
+
+      let pool = await sql.connect(config);
+      let result = await pool.request()
+          .input('empid', sql.NVarChar, empid)
+          .input('emp_name', sql.NVarChar, emp_name)
+          .input('father_name', sql.NVarChar, father_name)
+          .input('gender', sql.NVarChar, gender)
+          .input('dob', sql.Date, new Date(dob))
+          .input('whatsapp_no', sql.NVarChar, whatsapp_no)
+          .input('alternative_number', sql.NVarChar, alternative_number)
+          .input('email', sql.NVarChar, email)
+          .input('address', sql.NVarChar, address)
+          .input('qualification', sql.NVarChar, qualification)
+          .input('occupation', sql.NVarChar, occupation)
+          .input('user_role', sql.NVarChar, user_role)
+          .input('emp_status', sql.NVarChar, emp_status)
+          .query(`UPDATE emp_details 
+                  SET emp_name = @emp_name,
+                      father_name = @father_name,
+                      gender = @gender,
+                      dob = @dob,
+                      whatsapp_no = @whatsapp_no,
+                      alternative_number = @alternative_number,
+                      email = @email,
+                      address = @address,
+                      qualification = @qualification,
+                      occupation = @occupation,
+                      user_role = @user_role,
+                      emp_status = @emp_status
+                  WHERE empid = @empid`);
+
+      res.json({ message: 'Employee details updated successfully' });
+  } catch (err) {
+      res.status(500).json({ error: err.message });
+  }
+}
+
+async function deleteEmployee(req, res) {
+  try {
+      const empid = req.params.empid;
+
+      let pool = await sql.connect(config);
+      let result = await pool.request()
+          .input('empid', sql.NVarChar, empid)
+          .query(`DELETE FROM emp_details WHERE empid = @empid`);
+
+      res.json({ message: 'Employee deleted successfully' });
+  } catch (err) {
+      res.status(500).json({ error: err.message });
   }
 }
 
@@ -213,5 +289,9 @@ module.exports = {
   getEmpDetailsById,
   AddEmp,
   UpdateEmp,
-  getEmployeesByRole
+  getEmployeesByRole,
+  getEmployeesByEmpId,
+  updateEmployee,
+  deleteEmployee
 };
+
