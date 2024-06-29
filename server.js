@@ -19,6 +19,8 @@ const serviceTypeRoutes = require('./Routers/serviceTypesRoutes');
 const empRoutes = require('./Routers/empRouter');
 const serviceUsers = require('./Routers/ServiceUserRoutes');
 const serviceProviders = require('./Routers/ServiceProviderRoutes');
+const serviceProviderInfo = require('./Routers/SpInfoRoutes');
+
 
 app.use('/users', usersRoutes);
 app.use('/auth', authRoutes);
@@ -27,6 +29,7 @@ app.use('/servicetypes', serviceTypeRoutes);
 app.use('/', serviceUsers);
 app.use('/', serviceProviders);
 app.use('/emp', empRoutes);
+app.use("/", serviceProviderInfo);
 
 // Default route
 app.get('/', (req, res) => {

@@ -59,8 +59,8 @@ async function AddEmp(req, res) {
     request.input('address', sql.NVarChar(255), address);
     request.input('qualification', sql.NVarChar(50), qualification);
     request.input('occupation', sql.NVarChar(50), occupation);
-    request.input('user_role', sql.NVarChar(20), 'employee'); // Assuming a default role of 'employee'
-    request.input('emp_status', sql.NVarChar(10), 'active'); // Assuming a default status of 'active'
+    request.input('user_role', sql.NVarChar(20), 'employee'); 
+    request.input('emp_status', sql.NVarChar(10), 'active'); 
 
     await request.query(query);
 
